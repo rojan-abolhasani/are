@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <script>
+        async function uploadFile(event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('user_file_instance_data');
+            const fileDefinitionID = document.getElementById('user_file_instance_definition_id').value;
+            const version = document.getElementById('user_file_instance_version').value;
+            const posModelID = document.getElementById('user_file_instance_pos_models').value;
+            const posModels = JSON.stringify([{ pos_model_id: Number(posModelID) }]);
+
+            const formData = new FormData();
+            formData.append('user_file_instance_data', fileInput.files[0]); // The key here should match what the server expects
+            formData.append('user_file_instance_definition_id', fileDefinitionID);
+            formData.append('user_file_instance_version', version);
+            formData.append('user_file_instance_pos_models', posModels);
+
+
+            try {
+                const response = await fetch('http://0.0.0.0:9090/v1/file/instance', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const jsonResponse = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(jsonResponse, null, 2);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('response').textContent = 'Error uploading file';
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Upload File</h1>
+    <form id="uploadForm" onsubmit="uploadFile(event)">
+        <label for="fileDefinitionID">File Definition ID:</label>
+        <input type="text" id="user_file_instance_definition_id" name="user_file_instance_definition_id" required><br><br>
+1
+        <label for="version">Version:</label>
+        <input type="text" id="user_file_instance_version" name="user_file_instance_version" required><br><br>
+
+        <label for="posModelID">POS Model ID:</label>
+        <input type="number" id="user_file_instance_pos_models" name="user_file_instance_pos_models" required><br><br>
+
+
+        <label for="file">Choose file:</label>
+        <input type="file" id="user_file_instance_data" name="user_file_instance_data" required><br><br> <!-- Name should match 'uploadedFile' -->
+
+        <button type="submit">Upload</button>
+    </form>
+
+    <h2>Response:</h2>
+    <pre id="response"></pre>
+</body>
+</html>
